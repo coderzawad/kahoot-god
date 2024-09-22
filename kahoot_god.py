@@ -1,9 +1,10 @@
-import keyboard
+from pynput import keyboard
 import pyautogui
 import pytesseract
 import openai
+import dotenv
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Path to tesseract.exe example path: r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"/opt/homebrew/bin/tesseract"  # Path to tesseract.exe example path: r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 openai.api_key = "YOUR_API_KEY"
 
 def click_button(button):
@@ -45,16 +46,18 @@ def chatGPT_answer(question_and_answers):
 
 
 def kahoot_god():
-    # Percentage-based coordinates for kahoot question and answers
+    # Adjusting percentage-based coordinates for your screen resolution
     question_and_answers = {
-        0: {"top_left": (0.0, 0.072), "bottom_right": (1.0, 0.2)},
-        1: {"top_left": (0.042, 0.667), "bottom_right": (0.458, 0.742)},
-        2: {"top_left": (0.542, 0.667), "bottom_right": (1.0, 0.742)},
-        3: {"top_left": (0.042, 0.8), "bottom_right": (0.458, 0.875)},
-        4: {"top_left": (0.542, 0.8), "bottom_right": (1.0, 0.875)},
+        0: {"top_left": (0.0, 0.072), "bottom_right": (1.0, 0.2)},  # Question area
+        1: {"top_left": (0.042, 0.667), "bottom_right": (0.458, 0.742)},  # Answer 1
+        2: {"top_left": (0.542, 0.667), "bottom_right": (1.0, 0.742)},  # Answer 2
+        3: {"top_left": (0.042, 0.8), "bottom_right": (0.458, 0.875)},  # Answer 3
+        4: {"top_left": (0.542, 0.8), "bottom_right": (1.0, 0.875)},  # Answer 4
     }
-    screen_width, screen_height = pyautogui.size()
+
+    screen_width, screen_height = pyautogui.size()  # Should return (1920, 1080)
     res = ""
+
     for element in question_and_answers:
         coords = question_and_answers[element]
         x1, y1 = coords["top_left"]
@@ -79,7 +82,9 @@ def kahoot_god():
             res += f"Question: {screenshot_text}"
         else:
             res += f"{element}: {screenshot_text}"
+
     print(res)
+
     try:
         answer = chatGPT_answer(res)
         click_button(answer)
@@ -89,6 +94,8 @@ def kahoot_god():
 
 
 # Bind the function to a hotkey
-keyboard.add_hotkey("ctrl+alt+t", kahoot_god)
-# Keep the program running
-keyboard.wait()
+def on_activate():
+    kahoot_god()
+    
+with keyboard.GlobalHotKeys({'<ctrl>+<alt>+t': on_activate}) as h:
+    h.join()
